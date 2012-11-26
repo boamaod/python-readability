@@ -1,0 +1,4 @@
+Changes in VERSION 0.1.01
+    Began customizing Readability
+        -Added several divs to unlikelyCandidatesRe
+        -Moved media div from negative to positive
