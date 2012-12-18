@@ -1,3 +1,9 @@
+Changes in VERSION 0.1.02
+    Added ability to get "main image"
+        - Document class now has main_image_dict attribute which is populated
+          by the summary() method
+        - Added a requirements.txt
+
 Changes in VERSION 0.1.01
     Began customizing Readability
         -Added several divs to unlikelyCandidatesRe
