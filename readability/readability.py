@@ -2,6 +2,10 @@
 import logging
 import re
 import sys
+import requests
+
+from PIL import Image
+from StringIO import StringIO
 
 from collections import defaultdict
 from lxml.etree import tostring
@@ -99,6 +103,68 @@ class Document:
         self.input = input
         self.options = options
         self.html = None
+        self.main_image_dict = {}
+
+    def _get_main_image_dict(self, html_string):
+        """ Try to find the main image in the given html string """
+        min_pix_area = 10000 # 100 * 100
+
+        # Transform the html string into an lxml tree
+        doc = build_doc(html_string)
+
+        # Build list of img tags
+        tags = []
+        for t in self.tags(doc, 'img'):
+            tags.append(t)
+
+        # Get the urls out of the img tags
+        image_urls = [tag.attrib['src'] for tag in tags]
+
+        # Get actual image data
+        images = []
+        for u in image_urls:
+            r = requests.get(u)
+            if r.status_code != 200:
+                continue
+
+            try:
+                image_data = Image.open(StringIO(r.content))
+            except IOError:
+                continue
+
+            images.append(
+                    {
+                        'url': u,
+                        'size': image_data.size,
+                        'pix-area': image_data.size[0] * image_data.size[1],
+                        'object': image_data
+                    })
+
+        # Filter out images that are not big enough
+        def big_enough(image_dict):
+            if image_dict['pix-area'] < min_pix_area:
+                return False
+            return True
+
+        images = filter(big_enough, images)
+
+        # If we have no images we return an empty dict
+        if not images:
+            return {}
+
+        # If there is only one image then we will use it as the main image
+        if len(images) == 1:
+            return images[0]
+
+        # If we make it here then we have more than 1 image. We will return the
+        # largest image.
+        largest_pix_area = 0
+        largest_image_dict = {}
+        for i in images:
+            if i['pix-area'] > largest_pix_area:
+                largest_image_dict = i
+
+        return largest_image_dict
 
     def _html(self, force=False):
         if force or self.html is None:
@@ -176,6 +242,8 @@ class Document:
                     # Loop through and try again.
                     continue
                 else:
+                    # Try to get the main image
+                    self.main_image_dict = self._get_main_image_dict(cleaned_article)
                     return cleaned_article
         except StandardError, e:
             log.exception('error getting summary: ')
