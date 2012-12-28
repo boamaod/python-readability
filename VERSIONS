@@ -1,3 +1,8 @@
+Changes in VERSION 0.1.03
+    - Base 64 encode the image.
+    - Changed rename 'object' field to 'data' in the main_image_dict
+    - Added 'format' field to main_image_dict to store name of image format
+
 Changes in VERSION 0.1.02
     Added ability to get "main image"
         - Document class now has main_image_dict attribute which is populated
