@@ -4,6 +4,7 @@ import re
 import sys
 import requests
 
+from base64 import b64encode
 from PIL import Image
 from StringIO import StringIO
 
@@ -133,12 +134,14 @@ class Document:
                 continue
 
             images.append(
-                    {
-                        'url': u,
-                        'size': image_data.size,
-                        'pix-area': image_data.size[0] * image_data.size[1],
-                        'object': image_data
-                    })
+                {
+                    'url': u,
+                    'format': image_data.format,
+                    'size': image_data.size,
+                    'pix-area': image_data.size[0] * image_data.size[1],
+                    'data': b64encode(StringIO(r.content).read())
+                }
+            )
 
         # Filter out images that are not big enough
         def big_enough(image_dict):
