@@ -106,9 +106,36 @@ class Document:
         self.html = None
         self.main_image_dict = {}
 
+    def _img_tag_to_dict(self, img_tag):
+        url = img_tag.attrib['src']
+
+        r = requests.get(url)
+        if not r.status_code == 200:
+            return {}
+
+        fh = StringIO(r.content)
+        try:
+            image_data = Image.open(fh)
+        except IOError:
+            return {}
+
+        return {
+            'url': url,
+            'format': image_data.format,
+            'size': image_data.size,
+            'pix-area': image_data.size[0] * image_data.size[1],
+            'data': b64encode(fh.read())
+        }
+
+    def _img_big_enough(self, img_tag):
+        min_pix_area = 10000 # 100 * 100
+        img_dict = self._img_tag_to_dict(img_tag)
+        if img_dict.get('pix-area') < min_pix_area:
+            return False
+        return True
+
     def _get_main_image_dict(self, html_string):
         """ Try to find the main image in the given html string """
-        min_pix_area = 10000 # 100 * 100
 
         # Transform the html string into an lxml tree
         doc = build_doc(html_string)
@@ -118,38 +145,8 @@ class Document:
         for t in self.tags(doc, 'img'):
             tags.append(t)
 
-        # Get the urls out of the img tags
-        image_urls = [tag.attrib['src'] for tag in tags]
-
-        # Get actual image data
-        images = []
-        for u in image_urls:
-            r = requests.get(u)
-            if r.status_code != 200:
-                continue
-
-            try:
-                image_data = Image.open(StringIO(r.content))
-            except IOError:
-                continue
-
-            images.append(
-                {
-                    'url': u,
-                    'format': image_data.format,
-                    'size': image_data.size,
-                    'pix-area': image_data.size[0] * image_data.size[1],
-                    'data': b64encode(StringIO(r.content).read())
-                }
-            )
-
-        # Filter out images that are not big enough
-        def big_enough(image_dict):
-            if image_dict['pix-area'] < min_pix_area:
-                return False
-            return True
-
-        images = filter(big_enough, images)
+        # Convert image tags into informational dicts
+        images = [self._img_tag_to_dict(t) for t in tags]
 
         # If we have no images we return an empty dict
         if not images:
@@ -208,6 +205,12 @@ class Document:
                     i.drop_tree()
                 for i in self.tags(self.html, 'body'):
                     i.set('id', 'readabilityBody')
+
+                # Drop images that are too small
+                for i in self.tags(self.html, 'img'):
+                    if not self._img_big_enough(i):
+                        i.drop_tree()
+
                 if ruthless:
                     self.remove_unlikely_candidates()
                 self.transform_misused_divs_into_paragraphs()
