@@ -130,7 +130,7 @@ class Document:
     def _img_big_enough(self, img_tag):
         min_pix_area = 10000 # 100 * 100
         img_dict = self._img_tag_to_dict(img_tag)
-        if img_dict and img_dict.get('pix-area') < min_pix_area:
+        if img_dict.get('pix-area') < min_pix_area:
             return False
         return True
 
