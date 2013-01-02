@@ -1,3 +1,6 @@
+Changes in VERSION 0.1.04
+    - Drop image tags that are too small
+
 Changes in VERSION 0.1.03
     - Base 64 encode the image.
     - Changed rename 'object' field to 'data' in the main_image_dict
