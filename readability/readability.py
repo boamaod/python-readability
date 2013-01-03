@@ -107,6 +107,9 @@ class Document:
         self.main_image_dict = {}
 
     def _img_tag_to_dict(self, img_tag):
+        if not 'src' in img_tag.attrib.keys():
+            return {}
+
         url = img_tag.attrib['src']
 
         r = requests.get(url)
