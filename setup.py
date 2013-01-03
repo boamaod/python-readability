@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="readability-lxml",
-    version="0.1.04", # Akimbo Specific Version
+    version="0.1.05", # Akimbo Specific Version
     author="Yuri Baburov",
     author_email="burchik@gmail.com",
     description="fast python port of arc90's readability tool",
