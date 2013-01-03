@@ -1,3 +1,6 @@
+Changes in VERSION 0.1.05
+    - Fix for possible KeyError
+
 Changes in VERSION 0.1.04
     - Drop image tags that are too small
 
