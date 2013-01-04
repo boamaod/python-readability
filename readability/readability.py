@@ -142,6 +142,16 @@ class Document:
 
         # Transform the html string into an lxml tree
         doc = build_doc(html_string)
+        
+        if len(list(self.tags(doc, 'img'))) == 0:
+            doc = build_doc(tounicode(self.html))
+            new_html = clean_attributes(tounicode(self._parse(self.content())))
+            haystack = html_string.strip()
+            while haystack not in new_html and len(haystack) > 20:
+                old_len = len(haystack)
+                haystack = haystack[old_len/4 : old_len/2+old_len/4]
+                #log.info(haystack)
+            doc = build_doc(new_html.split(haystack)[0])
 
         # Build list of img tags
         tags = []
