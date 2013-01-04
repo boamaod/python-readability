@@ -210,11 +210,6 @@ class Document:
                 for i in self.tags(self.html, 'body'):
                     i.set('id', 'readabilityBody')
 
-                # Drop images that are too small
-                for i in self.tags(self.html, 'img'):
-                    if not self._img_big_enough(i):
-                        i.drop_tree()
-
                 if ruthless:
                     self.remove_unlikely_candidates()
                 self.transform_misused_divs_into_paragraphs()
