@@ -122,12 +122,19 @@ class Document:
         except IOError:
             return {}
 
+        ths = self.options.get('thumbnail_size', None)
+        log.info(ths)
+        fh2 = StringIO()
+        image_data.thumbnail(ths, Image.ANTIALIAS)
+        image_data.save(fh2, format="PNG")
+        image_content = fh2.getvalue()
+
         return {
             'url': url,
-            'format': image_data.format,
+            'format': "PNG",
             'size': image_data.size,
             'pix-area': image_data.size[0] * image_data.size[1],
-            'data': b64encode(fh.read())
+            'data': b64encode(image_content)
         }
 
     def _img_big_enough(self, img_tag):
