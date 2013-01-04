@@ -166,6 +166,7 @@ class Document:
         for i in images:
             if i['pix-area'] > largest_pix_area:
                 largest_image_dict = i
+                largest_pix_area = i['pix-area']
 
         return largest_image_dict
 
